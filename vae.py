@@ -56,8 +56,8 @@ class VariationalAutoencoder(object):
 
         z = None
         ####### Implementation Here ######
-        epsilon = tf.random_normal((self._nlatent,))
-        z = z_mean + z_log_var * epsilon       
+        epsilon = tf.random_normal(tf.shape(z_mean))
+        z = z_mean + tf.sqrt(tf.exp(z_log_var)) * epsilon       
         return z
 
     def _encoder(self, x):
@@ -84,10 +84,10 @@ class VariationalAutoencoder(object):
         z_mean = None
         z_log_var = None
         ####### Implementation Here ######
-        encoder_layer1 = fully_connected(x,100)
-        encoder_layer2 = fully_connected(encoder_layer1,50)
-        z_mean = fully_connected(encoder_layer2,self._nlatent)
-        z_log_var = fully_connected(encoder_layer2,self._nlatent)
+        encoder_layer1 = fully_connected(x,100,activation_fn = tf.nn.softplus)
+        encoder_layer2 = fully_connected(encoder_layer1,50,activation_fn = tf.nn.softplus)
+        z_mean = fully_connected(encoder_layer2,self._nlatent,activation_fn = tf.nn.softplus)
+        z_log_var = fully_connected(encoder_layer2,self._nlatent,activation_fn = tf.nn.softplus)
         return z_mean, z_log_var
 
     def _decoder(self, z):
@@ -108,9 +108,9 @@ class VariationalAutoencoder(object):
 
         f = None
         ####### Implementation Here ######
-        decoder_layer1 = fully_connected(z,50)
-        decoder_layer2 = fully_connected(decoder_layer1,100)
-        f = fully_connected(decoder_layer2,self._ndims)
+        decoder_layer1 = fully_connected(z,50,activation_fn = tf.nn.softplus)
+        decoder_layer2 = fully_connected(decoder_layer1,100,activation_fn = tf.nn.softplus)
+        f = fully_connected(decoder_layer2,self._ndims,activation_fn = tf.nn.softplus)
         return f
 
     def _latent_loss(self, z_mean, z_log_var):
@@ -126,7 +126,7 @@ class VariationalAutoencoder(object):
         """
         latent_loss = None
         ####### Implementation Here ######
-        latent_loss = 0.5 * tf.reduce_sum(tf.square(z_mean) + tf.square(z_log_var) - tf.log(1e-8 + tf.square(z_log_var))-1)
+        latent_loss  = 0.5* tf.reduce_mean((-z_log_var - 1. + tf.square(z_mean) + tf.exp(z_log_var)))
         return latent_loss
 
     def _reconstruction_loss(self, f, x_gt):
@@ -143,10 +143,9 @@ class VariationalAutoencoder(object):
         """
         recon_loss = None
         ####### Implementation Here ######
-        z_mean, z_log_var=self._encoder(x_gt)
-        z_mean = tf.reduce_mean(z_mean)
-        z_log_var = tf.reduce_mean(z_log_var)
-        recon_loss = tf.reduce_sum(tf.nn.l2_loss(x_gt - f - z_mean))/tf.square(z_log_var)
+        #recon_loss = tf.nn.l2_loss(f-x_gt)
+        recon_loss = tf.nn.l2_loss(x_gt-f)
+        print('recon_loss.shape = {0}'.format(str(recon_loss.shape)))
         return recon_loss
 
     def loss(self, f, x_gt, z_mean, z_var):
@@ -172,7 +171,7 @@ class VariationalAutoencoder(object):
         ####### Implementation Here ######
         latent_loss = self._latent_loss(z_mean, z_var)
         recon_loss = self._reconstruction_loss(f, x_gt)
-        total_loss = recon_loss + latent_loss
+        total_loss = latent_loss+recon_loss
         return total_loss
 
     def update_op(self, loss, learning_rate):
@@ -205,6 +204,6 @@ class VariationalAutoencoder(object):
         """
         out = None
         ####### Implementation Here ######
-        out = self.session.run(self.outputs_tensor, feed_dict=z_np)
+        out = self.session.run(self.outputs_tensor, feed_dict={self.z:z_np})
         return out
 
