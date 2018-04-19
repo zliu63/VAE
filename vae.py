@@ -84,10 +84,10 @@ class VariationalAutoencoder(object):
         z_mean = None
         z_log_var = None
         ####### Implementation Here ######
-        encoder_layer1 = fully_connected(x,100,activation_fn = tf.nn.softplus,scope = 'encoder_layer1')
-        encoder_layer2 = fully_connected(encoder_layer1,50,activation_fn = tf.nn.softplus, scope = 'encoder_layer2')
-        z_mean = fully_connected(encoder_layer2,self._nlatent,activation_fn = tf.nn.softplus, scope = 'z_mean')
-        z_log_var = fully_connected(encoder_layer2,self._nlatent,activation_fn=tf.nn.softplus,scope = 'z_log_var')
+        encoder_layer1 = fully_connected(x,100)
+        encoder_layer2 = fully_connected(encoder_layer1,50)
+        z_mean = fully_connected(encoder_layer2,self._nlatent)
+        z_log_var = fully_connected(encoder_layer2,self._nlatent)
         return z_mean, z_log_var
 
     def _decoder(self, z):
@@ -108,9 +108,9 @@ class VariationalAutoencoder(object):
 
         f = None
         ####### Implementation Here ######
-        decoder_layer1 = fully_connected(z,50,activation_fn=tf.nn.softplus,scope = 'decoder_layer1')
-        decoder_layer2 = fully_connected(decoder_layer1,100,activation_fn = tf.nn.softplus,scope = 'decoder_layer2')
-        f = fully_connected(decoder_layer2,self._ndims,activation_fn = tf.nn.softplus,scope = 'f')
+        decoder_layer1 = fully_connected(z,50)
+        decoder_layer2 = fully_connected(decoder_layer1,100)
+        f = fully_connected(decoder_layer2,self._ndims)
         return f
 
     def _latent_loss(self, z_mean, z_log_var):
