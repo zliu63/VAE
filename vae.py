@@ -205,6 +205,6 @@ class VariationalAutoencoder(object):
         """
         out = None
         ####### Implementation Here ######
-        out = sess.run(self.output_tensor, feed_dict=z_np)
+        out = self.session.run(self.outputs_tensor, feed_dict=z_np)
         return out
 
