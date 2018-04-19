@@ -56,9 +56,8 @@ class VariationalAutoencoder(object):
 
         z = None
         ####### Implementation Here ######
-        epsilon = tf.ranfom_normal((self._nlatent,))
-        z = z_mean + z_log_var * epsilon
-        pass        
+        epsilon = tf.random_normal((self._nlatent,))
+        z = z_mean + z_log_var * epsilon       
         return z
 
     def _encoder(self, x):
@@ -85,7 +84,6 @@ class VariationalAutoencoder(object):
         z_mean = None
         z_log_var = None
         ####### Implementation Here ######
-        pass
         encoder_layer1 = fully_connected(x,100,activation_fn = tf.nn.softplus,scope = 'encoder_layer1')
         encoder_layer2 = fully_connected(encoder_layer1,50,activation_fn = tf.nn.softplus, scope = 'encoder_layer2')
         z_mean = fully_connected(encoder_layer2,self._nlatent,activation_fn = tf.nn.softplus, scope = 'z_mean')
@@ -113,7 +111,6 @@ class VariationalAutoencoder(object):
         decoder_layer1 = fully_connected(z,50,activation_fn=tf.nn.softplus,scope = 'decoder_layer1')
         decoder_layer2 = fully_connected(decoder_layer1,100,activation_fn = tf.nn.softplus,scope = 'decoder_layer2')
         f = fully_connected(decoder_layer2,self._ndims,activation_fn = tf.nn.softplus,scope = 'f')
-        pass
         return f
 
     def _latent_loss(self, z_mean, z_log_var):
@@ -173,8 +170,8 @@ class VariationalAutoencoder(object):
         """
         total_loss = None
         ####### Implementation Here ######
-        latent_loss = _latent_loss(self, z_mean, z_var)
-        recon_loss = _reconstruction_loss(self, f, x_gt)
+        latent_loss = self._latent_loss(z_mean, z_var)
+        recon_loss = self._reconstruction_loss(f, x_gt)
         total_loss = recon_loss + latent_loss
         return total_loss
 
